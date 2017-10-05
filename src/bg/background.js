@@ -486,6 +486,24 @@ function fixDropBoxEvents(){
       let oldDate = brokenEvent.oldDate;
       let newDate = brokenEvent.newDate;
       let oldEvent = EVENTS[oldDate.year][oldDate.month][oldDate.day][uid];
+      if(brokenEvent.workshop){
+        let oldEventSummary = oldEvent.summary;
+        let regexptomatch = /\(.*\)/;
+        let workshop = Object.keys(brokenEvent.workshop);
+        for(let i=0; i<workshop.length; i++){
+          // console.log(workshop[i]);
+          if(oldEventSummary.search("opens for assessment") > -1){
+            oldEventSummary = oldEventSummary.replace("opens", "open");
+          }
+          if(workshop[i].toLowerCase().search(regexptomatch.exec(oldEventSummary)) > -1){
+            console.log("Summary: ", oldEventSummary);
+            console.log("Existing: ", newDate);
+            console.log("selected: ", workshop[i]);
+            console.log("Change to:", brokenEvent.workshop[workshop[i]]);
+            //newDate = brokenEvent.workshop[workshop[i]];
+          }
+        }
+      }
       delete EVENTS[oldDate.year][oldDate.month][oldDate.day][uid];
 
       if(Object.keys(EVENTS[oldDate.year][oldDate.month][oldDate.day]).length === 0){
