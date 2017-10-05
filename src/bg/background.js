@@ -348,7 +348,13 @@ function scrapeEventTime(){
         console.log(jsonDate);
         jsonDate.forEach(function(jsDate){
           if(jsDate.state === "fulfilled" && jsDate.value !== undefined){
-            EVENT_NEED_FIX[jsDate.value[1]].newDate = jsDate.value[0];
+            if(jsDate.value.length == 2){
+              EVENT_NEED_FIX[jsDate.value[1]].newDate = jsDate.value[0];
+            }
+            else{
+              EVENT_NEED_FIX[jsDate.value[1]].newDate = jsDate.value[0];
+              EVENT_NEED_FIX[jsDate.value[1]].workshop = jsDate.value[2];
+            }
           }
         });
         console.warn("About to fix events", EVENT_NEED_FIX);
@@ -422,7 +428,34 @@ function getDueDateFromEventPage(actualEventPageURL, idOfEvent){
         resolve([jsonDate, idOfEvent]);
       }
       else{
-        reject("Error getting due date");
+        //TODO refactor this code. It has duplication
+        // this is for Workshop events
+        eventDateChildren = $($event).find("#region-main > div > div.userplan > dl > dd.phasetasks > ul > li.info > div.title"); // No need for children here as on children we get span however what we need is div
+        if(eventDateChildren.length > 0){
+          deadlineForDiffPartsOfWorkshop = {};
+          for(let i=0; i<eventDateChildren.length; i++){
+            let eventDate = $(eventDateChildren[i]).text();
+            let tempDateObjectCheck = Date.parse(eventDate);
+            if(isNaN(tempDateObjectCheck) === false){
+              let tempDateObject = new Date(eventDate);
+              let dateYear = tempDateObject.getFullYear();
+              let dateMonth = tempDateObject.getMonth()+1;
+              let dateDate = tempDateObject.getDate();
+              let dateHour = tempDateObject.getHours();
+              let dateMins = tempDateObject.getMinutes();
+              let dateSecs = tempDateObject.getMinutes();
+              let jsonDate = new ICAL.Time({year: dateYear, month: dateMonth, day: dateDate, hour: dateHour, minute: dateMins, second: dateSecs, isDate: false}).toJSON();
+              deadlineForDiffPartsOfWorkshop[eventDate.toString()] = jsonDate;
+            }
+            // console.log(idOfEvent);
+          }
+          // this is only for a workshop as they have 3 different deadlines
+          resolve([deadlineForDiffPartsOfWorkshop[Object.keys(deadlineForDiffPartsOfWorkshop)[0]], idOfEvent, deadlineForDiffPartsOfWorkshop]);
+        }
+        else{
+          // some other unimplemented event
+          reject("Error getting due date");
+        }
       }
       // EVENT_NEED_FIX[idOfEvent].newDate = jsonDate;
     })
@@ -453,6 +486,24 @@ function fixDropBoxEvents(){
       let oldDate = brokenEvent.oldDate;
       let newDate = brokenEvent.newDate;
       let oldEvent = EVENTS[oldDate.year][oldDate.month][oldDate.day][uid];
+      if(brokenEvent.workshop){
+        let oldEventSummary = oldEvent.summary;
+        let regexptomatch = /\(.*\)/;
+        let workshop = Object.keys(brokenEvent.workshop);
+        for(let i=0; i<workshop.length; i++){
+          // console.log(workshop[i]);
+          if(oldEventSummary.search("opens for assessment") > -1){
+            oldEventSummary = oldEventSummary.replace("opens", "open");
+          }
+          if(workshop[i].toLowerCase().search(regexptomatch.exec(oldEventSummary)) > -1){
+            // console.log("Summary: ", oldEventSummary);
+            // console.log("Existing: ", newDate);
+            // console.log("selected: ", workshop[i]);
+            // console.log("Change to:", brokenEvent.workshop[workshop[i]]);
+            newDate = brokenEvent.workshop[workshop[i]];
+          }
+        }
+      }
       delete EVENTS[oldDate.year][oldDate.month][oldDate.day][uid];
 
       if(Object.keys(EVENTS[oldDate.year][oldDate.month][oldDate.day]).length === 0){
