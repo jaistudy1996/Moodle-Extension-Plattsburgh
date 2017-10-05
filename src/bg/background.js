@@ -496,11 +496,11 @@ function fixDropBoxEvents(){
             oldEventSummary = oldEventSummary.replace("opens", "open");
           }
           if(workshop[i].toLowerCase().search(regexptomatch.exec(oldEventSummary)) > -1){
-            console.log("Summary: ", oldEventSummary);
-            console.log("Existing: ", newDate);
-            console.log("selected: ", workshop[i]);
-            console.log("Change to:", brokenEvent.workshop[workshop[i]]);
-            //newDate = brokenEvent.workshop[workshop[i]];
+            // console.log("Summary: ", oldEventSummary);
+            // console.log("Existing: ", newDate);
+            // console.log("selected: ", workshop[i]);
+            // console.log("Change to:", brokenEvent.workshop[workshop[i]]);
+            newDate = brokenEvent.workshop[workshop[i]];
           }
         }
       }
