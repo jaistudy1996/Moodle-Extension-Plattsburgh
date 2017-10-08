@@ -362,6 +362,8 @@ function scrapeEventTime(){
       })
       .catch(function(error){
         console.log("Error: ", error);
+        // restart is fixDropBoxEvents has some error. 
+        checkUserLogin();
       });
     })
     .catch(function(error){
@@ -485,6 +487,7 @@ function fixDropBoxEvents(){
     if(brokenEvent.newDate){
       let oldDate = brokenEvent.oldDate;
       let newDate = brokenEvent.newDate;
+      // TODO have some bug in this line. don;t know what it is rn.
       let oldEvent = EVENTS[oldDate.year][oldDate.month][oldDate.day][uid];
       if(brokenEvent.workshop){
         let oldEventSummary = oldEvent.summary;
