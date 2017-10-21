@@ -362,7 +362,7 @@ function scrapeEventTime(){
       })
       .catch(function(error){
         console.log("Error: ", error);
-        // restart is fixDropBoxEvents has some error. 
+        // restart is fixDropBoxEvents has some error.
         checkUserLogin();
       });
     })
@@ -545,6 +545,7 @@ function fixDropBoxEvents(){
   }
   chrome.storage.local.set({EVENTS: EVENTS}, function(){
     console.log("Events saved to storage");
+    EVENT_NEED_FIX = {}; // events are now fixed and now be emptied
   });
 
   // inform popup that events are now laoded
